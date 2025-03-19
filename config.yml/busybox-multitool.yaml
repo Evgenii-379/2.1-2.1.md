@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shared-data-app
+  namespace: netology-storage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shared-data-app
+  template:
+    metadata:
+      labels:
+        app: shared-data-app
+    spec:
+      containers:
+      - name: busybox
+        image: busybox
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo $(date) >> /shared-data/file.log; sleep 5; done"]
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /shared-data
+
+      - name: multitool
+        image: praqma/network-multitool
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /shared-data
+        ports:
+        - containerPort: 80
+
+      volumes:
+      - name: shared-volume
+        emptyDir: {}
